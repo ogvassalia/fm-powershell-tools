@@ -19,19 +19,48 @@ function fix {
 		Remove-Item -Path $newFileName
 	}
 
-	New-Item $newFileName
+	New-Item $newFileName | Out-Null
+	[int]$lineCnt = 0
+	[int]$contentChanged = 0
 
 	foreach ($line in Get-Content $fileName)
 	{
-		if ($line.StartsWith("//FixCodeStyle.ps1: analyzed"))
+		$lineCnt++
+		
+		if ($line.StartsWith("//FixCodeStyle.ps1:"))
 		{
 			continue;
 		}
-	
+	    
+		[int]$indentLen = $line.length - $line.Trim().length
+		[int]$indentLenDiff = (($indentLen / 4) * 4)
+		
+		if ($indentLen -lt 4 -and $indentLen -gt 0) {
+		    Write-Host -BackgroundColor Yellow -ForegroundColor Red "Error: Wrong indentation at line:" $lineCnt "    "
+			
+			Exit 0
+		}
+		
+		if ($indentLen -ne $indentLenDiff) {
+		    Write-Host "Error: Wrong indentation at line: " $lineCnt
+			
+			Exit 0
+		}
+		
+		if ($contentChanged -eq 0 -and $line -ne $line.TrimEnd()) {
+			$contentChanged = 1
+		}
+		
 		Add-Content -Path $newFileName $line.TrimEnd()
 	}
-
-	Add-Content -Path $newFileName "//FixCodeStyle.ps1: analyzed"
+	
+    [string]$content = "//FixCodeStyle.ps1: Last time analyzed " + ([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss"))
+	
+	Add-Content -Path $newFileName $content
+	
+	if ($contentChanged -eq 1) {
+		Write-Host "Content changed"
+	}
 	
 	return $newFileName
 }

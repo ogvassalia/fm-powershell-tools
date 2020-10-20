@@ -27,7 +27,10 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Compile Include="FindFilesWithLongNames.ps1" />
+    <Compile Include="FixCodeStyle.ps1" />
     <Compile Include="MoveFilesToDailyDirs.ps1" />
+    <Compile Include="SplitCsvFile.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
