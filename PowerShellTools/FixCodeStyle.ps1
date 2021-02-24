@@ -36,13 +36,13 @@ function fix {
 		[int]$indentLenDiff = (($indentLen / 4) * 4)
 		
 		if ($indentLen -lt 4 -and $indentLen -gt 0) {
-		    Write-Host -BackgroundColor Yellow -ForegroundColor Red "Error: Wrong indentation at line:" $lineCnt "    "
+		    Write-Host -BackgroundColor Yellow -ForegroundColor Red "Error: Wrong indentation at line:" $lineCnt "    " $fileName
 			
 			Exit 0
 		}
 		
 		if ($indentLen -ne $indentLenDiff) {
-		    Write-Host "Error: Wrong indentation at line: " $lineCnt
+		    Write-Host "Error: Wrong indentation at line: " $lineCnt $fileName
 			
 			Exit 0
 		}
@@ -59,13 +59,13 @@ function fix {
 	Add-Content -Path $newFileName $content
 	
 	if ($contentChanged -eq 1) {
-		Write-Host "Content changed"
+		Write-Host "Content changed: " $fileName
 	}
 	
 	return $newFileName
 }
 
-if ($PSBoundParameters.length -eq 1) {
+if ($PSBoundParameters.Count -eq 1) {
 	Write-Host "Fixing: " $dirNameOrFileName
 	
 	fix($dirNameOrFileName)
@@ -75,9 +75,15 @@ if ($PSBoundParameters.length -eq 1) {
 	Exit 0
 }
 
-if ($PSBoundParameters.length -eq 2) {
+if ($PSBoundParameters.Count -eq 2) {
 	foreach ($fileName in Get-ChildItem -Path $dirNameOrFileName -Include *.$ext -Recurse)
 	{
+		if (Test-Path $fileName.FullName -PathType Container)
+		{
+			Write-Host $fileName.FullName "is a directory"
+			continue;
+		}
+	
 		[string]$newFileName = fix($fileName.FullName)
 
 		Move-Item -Force $newFileName $fileName.FullName
